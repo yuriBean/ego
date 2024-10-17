@@ -1,0 +1,13 @@
+/* src/App.css or src/components/StarRating.css */
+.star-rating {
+  display: flex;
+}
+
+.star {
+  font-size: 1.5rem;
+  color: #ddd;
+}
+
+.star.filled {
+  color: #ffc107; /* Yellow color for filled stars */
+}
