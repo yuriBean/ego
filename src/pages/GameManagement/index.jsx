@@ -98,7 +98,7 @@ export default function GameManagement() {
 
     };
 
-    useEffect((Item) => {
+    useEffect(() => {
         if (id) {
             try {
                 axios.get(`${process.env.REACT_APP_BACKEND_PORT}/game/update?pageId=${id}`, {
@@ -106,16 +106,28 @@ export default function GameManagement() {
                         'Content-Type': 'application/json'
                     },
                 }).then((res) => {
-                    setGameFormate(res.data)
-                    setSelectedPair(res.data.wheelColorPair.id)
-                    setSelectedButtonColor(res.data.buttonColorID)
-
-                })
+                    const fetchedData = res.data;
+    
+                    // Calculate the total based on the fetched option frequencies
+                    const fetchedTotal = Object.keys(fetchedData.options).reduce((acc, key) => {
+                        if (key.includes('frequency')) {
+                            return acc + (Number(fetchedData.options[key]) || 0);
+                        }
+                        return acc;
+                    }, 0);
+    
+                    // Update the state with fetched data and set the total to 100 - fetchedTotal
+                    setGameFormate(fetchedData);
+                    setSelectedPair(fetchedData.wheelColorPair.id);
+                    setSelectedButtonColor(fetchedData.buttonColorID);
+                    setTotal(100 - fetchedTotal); // Ensure the total is 100
+                });
             } catch (error) {
-                console.error("Error sending email");
+                console.error("Error fetching game data");
             }
         }
-    }, [id])
+    }, [id]);
+    
 
     const optionsArray = Array.from({ length: 100 }, (_, i) => i + 1);
     const createLandingPage = () => {
@@ -370,41 +382,33 @@ export default function GameManagement() {
                                                             placeholder={`Entrez votre option ${index + 1}`}
                                                             value={gameFormat.options[`option${index + 1}`]}
                                                         />
-                                                       <select
-                                                            onChange={(e) => {
-                                                                const selectedValue = Number(e.target.value);
-                                                                const previousValue = gameFormat.options[`option${index + 1}frequency`] || 0;
+                                                            <select
+                                                                onChange={(e) => {
+                                                                    const selectedValue = Number(e.target.value);
+                                                                    const previousValue = gameFormat.options[`option${index + 1}frequency`] || 0;
 
-                                                                // Calculate new total (subtract the previous frequency and add the new one)
-                                                                let newTotal = total - previousValue + selectedValue;
+                                                                    // Calculate new total
+                                                                    const newTotal = total + previousValue - selectedValue;
 
-                                                                // Ensure that the total does not exceed 100
-                                                                if (newTotal > 100) {
-                                                                    alert('La somme des fréquences ne peut pas dépasser 100');
-                                                                    return; // Prevent the update if the total exceeds 100
+                                                                    setTotal(newTotal);
+                                                                    setGameFormate({
+                                                                        ...gameFormat,
+                                                                        options: { ...gameFormat.options, [`option${index + 1}frequency`]: selectedValue }
+                                                                    });
+                                                                }}
+                                                                className="md:ml-2 flex flex-col justify-center px-3.5 py-2.5 mt-3 text-base leading-6 bg-white rounded-lg border border-gray-300 border-solid shadow-sm text-zinc-400 max-md:max-w-full outline-none w-[100px]"
+                                                                value={gameFormat.options[`option${index + 1}frequency`] || ''}
+                                                            >
+                                                                <option disabled value="">Select</option>
+                                                                {
+                                                                    new Array(total + (gameFormat.options[`option${index + 1}frequency`] || 0) + 1).fill(0).map((_, optionIndex) => (
+                                                                        <option key={optionIndex} value={optionIndex}>
+                                                                            {optionIndex}
+                                                                        </option>
+                                                                    ))
                                                                 }
+                                                            </select>
 
-                                                                // Update total and the selected frequency value
-                                                                setTotal(newTotal);
-                                                                setGameFormate({
-                                                                    ...gameFormat,
-                                                                    options: { 
-                                                                        ...gameFormat.options, 
-                                                                        [`option${index + 1}frequency`]: selectedValue 
-                                                                    }
-                                                                });
-                                                            }}
-                                                            className="md:ml-2 flex flex-col justify-center px-3.5 py-2.5 mt-3 text-base leading-6 bg-white rounded-lg border border-gray-300 border-solid shadow-sm text-zinc-400 max-md:max-w-full outline-none w-[100px]"
-                                                            value={gameFormat.options[`option${index + 1}frequency`] || ''}>
-                                                            <option disabled value="">Sélectionner</option>
-                                                            {
-                                                                new Array(100 - total + (gameFormat.options[`option${index + 1}frequency`] || 0) + 1).fill(0).map((_, optionIndex) => (
-                                                                    <option key={optionIndex} value={optionIndex}>
-                                                                        {optionIndex}
-                                                                    </option>
-                                                                ))
-                                                            }
-                                                        </select>
 
                                                     </div>
                                                 </div>
