@@ -20,7 +20,9 @@ export default function BookADemo() {
     const Navigate = useNavigate();
 
    const handleFormSubmit = async (e) => {
-        e.preventDefault();
+       e.preventDefault();
+       console.log(process.env.REACT_APP_BACKEND_PORT);
+       
         const formData = {
             email: email,
             restaurantName: restaurantName,
