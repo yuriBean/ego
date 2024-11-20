@@ -5,7 +5,6 @@ import axios from "axios";
 import { useParams } from 'react-router-dom';
 import { useNavigate } from "react-router-dom";
 import SpinDesign from "../../components/SpinDesign.jsx";
-import { useDispatch } from 'react-redux';
 
 import MessageModal from "../../components/MessageModal";
 
@@ -71,7 +70,6 @@ export default function GameManagement() {
     const [selectedPair, setSelectedPair] = useState(1);
     const [selectedButtonColor, setSelectedButtonColor] = useState(1);
 
-    const dispatch = useDispatch();
 
     const handlePairClick = (pairId, color1, color2) => {
       setSelectedPair(pairId);
@@ -133,58 +131,84 @@ export default function GameManagement() {
     }, [id]);
 
     const optionsArray = Array.from({ length: 100 }, (_, i) => i + 1);
-    const createLandingPage = () => {
-      if (id) {
-        try {
-          axios
-            .put(
-              `${process.env.REACT_APP_BACKEND_PORT}/game/${id}`,
-              { gameFormat },
-              {
-                headers: {
-                  "Content-Type": "application/json",
-                },
-              }
-            )
-            .then((res) => {
-              Navigate("/landing-pages");
-            });
-        } catch (error) {
-          console.error("Error sending email");
-        }
-      } else {
-        try {
-          axios
-            .post(
-              `${process.env.REACT_APP_BACKEND_PORT}/game`,
-              { gameFormat },
-              {
-                headers: {
-                  "Content-Type": "application/json",
-                },
-              }
-            )
-            .then((res) => {
-              Navigate("/landing-pages");
-            })
-            .catch((err) => {
-              // Navigate(`/pricing/:${userId}`)
-              // if (err.response.data.message !== "Please wait for admin approval" && err.response.data.message !== "You are restricted from admin to create landing page") {
-              //     setLink("/landing-pages")
-              //     setbuttonText("Okay")
-              // }
-              // else {
-              //     setLink("/game")
-              //     setbuttonText("Okay")
-              // }
-              setLink("/game");
-              setbuttonText("D'accord");
+    const createLandingPage = async () => {
+      try {
+        // Prepopulate options and calculate remaining probabilities
+        const prepopulateOptions = (format) => {
+          let updatedOptions = { ...format.options };
 
-              setMessage(err.response.data.message);
-              setOpenMessage(true);
-            });
-        } catch (error) {
-          console.error("Error sending email");
+          // Set default values for the first five options if not provided
+          for (let i = 1; i <= 5; i++) {
+            updatedOptions[`option${i}`] = updatedOptions[`option${i}`] || "";
+            updatedOptions[`option${i}frequency`] =
+              parseInt(updatedOptions[`option${i}frequency`]) || null; // Default 10% if undefined
+          }
+
+          // Calculate remaining probability
+          const totalAssigned =
+            updatedOptions.option1frequency +
+            updatedOptions.option2frequency +
+            updatedOptions.option3frequency +
+            updatedOptions.option4frequency +
+            updatedOptions.option5frequency;
+          const remainingProbability = 100 - totalAssigned;
+
+          if (remainingProbability < 0) {
+            throw new Error(
+              "Total probability exceeds 100%. Please adjust the values."
+            );
+          }
+
+          // Distribute remaining probability across last three options
+          const perduProbability = Math.floor(remainingProbability / 3);
+          const leftoverProbability = remainingProbability % 3;
+
+          updatedOptions.option6 = "Perdu";
+          updatedOptions.option7 = "Perdu";
+          updatedOptions.option8 = "Perdu";
+
+          updatedOptions.option6frequency =
+            perduProbability + (leftoverProbability > 0 ? 1 : 0);
+          updatedOptions.option7frequency =
+            perduProbability + (leftoverProbability > 1 ? 1 : 0);
+          updatedOptions.option8frequency = perduProbability;
+
+          return { ...format, options: updatedOptions };
+        };
+
+        // Update game format with pre-populated options
+        const updatedGameFormat = prepopulateOptions(gameFormat);
+
+        // Choose endpoint based on `id` presence
+        const apiEndpoint = id
+          ? `${process.env.REACT_APP_BACKEND_PORT}/game/${id}`
+          : `${process.env.REACT_APP_BACKEND_PORT}/game`;
+
+        const apiMethod = id ? axios.put : axios.post;
+
+        // Call API
+        const response = await apiMethod(
+          apiEndpoint,
+          { gameFormat: updatedGameFormat },
+          {
+            headers: { "Content-Type": "application/json" },
+          }
+        );
+
+        // Navigate on success
+        Navigate("/landing-pages");
+      } catch (error) {
+        console.error("Error creating/updating the landing page:", error);
+
+        if (
+          error.response &&
+          error.response.data &&
+          error.response.data.message
+        ) {
+          setLink("/game");
+          setbuttonText("D'accord");
+          setMessage(error.response.data.message);
+          setOpenMessage(true);
         }
       }
     };
@@ -288,7 +312,7 @@ export default function GameManagement() {
         <AsideHeader />
         <div className="flex flex-col items-center w-full mt-4 max-md:mt-10 max-md:max-w-full">
           <div className="justify-center text-center self-start p-2.5 mt-6 text-lg font-medium tracking-wide leading-6 text-blue-950">
-            Game Management
+            Create Your Page
           </div>
           <div className="mt-2 text-2xl font-bold leading-10 text-black">
             Set up your landing page
@@ -302,7 +326,7 @@ export default function GameManagement() {
                 selectedRow === 1 ? "bg-indigo-400 text-white" : "text-black"
               } rounded-3xl`}
             >
-              Page Content
+              Page settings
             </div>
             <div
               onClick={() => {
@@ -322,7 +346,7 @@ export default function GameManagement() {
                 selectedRow === 3 ? "bg-indigo-400 text-white" : "text-black"
               } rounded-3xl`}
             >
-              Social Media links
+              Links
             </div>
           </div>
 

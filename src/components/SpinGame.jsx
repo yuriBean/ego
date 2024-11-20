@@ -232,11 +232,11 @@ const SpinGame = () => {
             )}
           </div>
           <div className="flex flex-col md:flex-row gap-11 max-w-[900px] justify-between mx-auto items-center mt-10">
-            <div className="container mt-10 mb-0 md:mb-0">
-              <div
-                className="spinBtn"
-                onClick={() => spinedClick(gameFormat)}
-              ></div>
+            <div
+              className="container mt-10 mb-0 md:mb-0"
+              onClick={() => spinedClick(gameFormat)}
+            >
+              <div className="spinBtn"></div>
               <div className="wheel">
                 <div
                   className="number"
@@ -333,7 +333,7 @@ const SpinGame = () => {
                 Tentez votre chance pour une récompense!
               </div>
               <div className="w-full mt-8 text-xl text-center">
-                Tournez la roue: Entrez votre email!
+                Entrez votre email pour tourner la roue
               </div>
               <div className="w-full mt-8 text-sm leading-5">Email</div>
               <input
