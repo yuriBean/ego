@@ -153,31 +153,30 @@ export default function GameManagement() {
             updatedOptions.option5frequency;
           const remainingProbability = 100 - totalAssigned;
 
-          if (remainingProbability < 0) {
-            throw new Error(
-              "Total probability exceeds 100%. Please adjust the values."
-            );
-          }
-
-          // Distribute remaining probability across last three options
-          const perduProbability = Math.floor(remainingProbability / 3);
-          const leftoverProbability = remainingProbability % 3;
-
           updatedOptions.option6 = "Perdu";
           updatedOptions.option7 = "Perdu";
           updatedOptions.option8 = "Perdu";
+          if (remainingProbability <= 0) {
+            updatedOptions.option6frequency = 0;
+            updatedOptions.option7frequency = 0;
+            updatedOptions.option8frequency = 0;
+          } else {
+            // Distribute remaining probability across last three options
+            const perduProbability = Math.floor(remainingProbability / 3);
+            const leftoverProbability = remainingProbability % 3;
 
-          updatedOptions.option6frequency =
-            perduProbability + (leftoverProbability > 0 ? 1 : 0);
-          updatedOptions.option7frequency =
-            perduProbability + (leftoverProbability > 1 ? 1 : 0);
-          updatedOptions.option8frequency = perduProbability;
-
+            updatedOptions.option6frequency =
+              perduProbability + (leftoverProbability > 0 ? 1 : 0);
+            updatedOptions.option7frequency =
+              perduProbability + (leftoverProbability > 1 ? 1 : 0);
+            updatedOptions.option8frequency = perduProbability;
+          }
           return { ...format, options: updatedOptions };
         };
 
         // Update game format with pre-populated options
         const updatedGameFormat = prepopulateOptions(gameFormat);
+        console.log(updatedGameFormat);
 
         // Choose endpoint based on `id` presence
         const apiEndpoint = id
