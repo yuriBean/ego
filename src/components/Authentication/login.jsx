@@ -74,7 +74,6 @@ export default function Login() {
         email: emailRef.current.value,
         password: passwordRef.current.value,
       };
-      console.log(process.env.REACT_APP_BACKEND_PORT);
 
       try {
         axios
