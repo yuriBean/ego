@@ -92,7 +92,6 @@ export default function Login() {
               return;
             }
 
-            console.log(res.data);
 
             if (!res.data.payment && !res.data.isTrial) {
               if (!res.data.isVerified) {

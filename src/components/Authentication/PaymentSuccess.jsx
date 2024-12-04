@@ -8,24 +8,30 @@ const PaymentSuccess = () => {
     const Navigate = useNavigate();
 
     useEffect(() => {
-        if (sessionID) {
-            axios.get(`${process.env.REACT_APP_BACKEND_PORT}/checkout/success?sessionId=${sessionID}`, {
-                headers: {
-                    'Content-Type': 'application/json'
-                }
-            }).then((res) => {
-                Navigate('/login')
-            }).catch((err) => {
-                console.log(err)
-                Navigate('/login')
-            })
-        }
-    }, [sessionID])
+      if (sessionID) {
+        axios
+          .get(
+            `${process.env.REACT_APP_BACKEND_PORT}/checkout/success?sessionId=${sessionID}`,
+            {
+              headers: {
+                "Content-Type": "application/json",
+              },
+            }
+          )
+          .then((res) => {
+            Navigate("/login");
+          })
+          .catch((err) => {
+            console.log(err);
+            Navigate("/login");
+          });
+      }
+    }, [Navigate, sessionID]);
     return (
-        <div className="h-60vg flex justify-center items-center">
-            <p className='text-semibold text-xl text-blue-500'>Loading...</p>
-        </div>
-    )
+      <div className="flex items-center justify-center h-60vg">
+        <p className="text-xl text-blue-500 text-semibold">Loading...</p>
+      </div>
+    );
 }
 
 export default PaymentSuccess
