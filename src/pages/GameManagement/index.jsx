@@ -176,7 +176,6 @@ export default function GameManagement() {
 
         // Update game format with pre-populated options
         const updatedGameFormat = prepopulateOptions(gameFormat);
-        console.log(updatedGameFormat);
 
         // Choose endpoint based on `id` presence
         const apiEndpoint = id
